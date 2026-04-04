@@ -8,7 +8,7 @@ from src.models.vision import describe_image
 from src.ingestion.embedder import embed_texts, embed_chunks
 from src.retrieval.vector_store import VectorStore
 from src.retrieval.retriever import retrieve
-from src.models.llm import generate_answer
+from src.models.llm import generate_answer, generate_answer_with_sources
 
 router = APIRouter()
 vector_store = VectorStore()
@@ -98,13 +98,14 @@ async def ingest(file: UploadFile = File(...)):
 
 
 @router.post("/query")
-def query(q: str, chunk_types: str = None):
+def query(q: str, chunk_types: str = None, include_sources: bool = True):
     """
-    Query the vector store for relevant chunks.
+    Query the vector store for relevant chunks and generate an answer.
 
     Args:
         q: Query string
         chunk_types: Optional comma-separated list of chunk types to filter by (e.g., "text,table")
+        include_sources: Whether to include detailed source information
     """
     # Parse chunk types filter
     filter_types = None
@@ -117,29 +118,73 @@ def query(q: str, chunk_types: str = None):
     # Search the vector store
     results = vector_store.search(query_embedding, k=5, filter_types=filter_types)
 
-    # Generate answer using LLM
-    answer = generate_answer(q, results)
+    if not results:
+        return {
+            "answer": "No relevant information found in the documents.",
+            "sources": [],
+            "query": q,
+            "filter_types": filter_types
+        }
+
+    # Generate answer with sources
+    if include_sources:
+        response = generate_answer_with_sources(q, results)
+        response["filter_types"] = filter_types
+        return response
+    else:
+        # Simple answer only
+        answer = generate_answer(q, results)
+        return {
+            "answer": answer,
+            "query": q,
+            "filter_types": filter_types
+        }
+
+
+@router.post("/retrieve")
+def retrieve_only(q: str, chunk_types: str = None, k: int = 5):
+    """
+    Retrieve relevant chunks without generating an answer.
+
+    Args:
+        q: Query string
+        chunk_types: Optional comma-separated list of chunk types to filter by
+        k: Number of results to return
+    """
+    # Parse chunk types filter
+    filter_types = None
+    if chunk_types:
+        filter_types = [t.strip() for t in chunk_types.split(",") if t.strip()]
+
+    # Embed the query
+    query_embedding = embed_texts([q])[0]
+
+    # Search the vector store
+    results = vector_store.search(query_embedding, k=k, filter_types=filter_types)
 
     return {
-        "answer": answer,
-        "sources": results,
         "query": q,
-        "filter_types": filter_types
+        "results": results,
+        "filter_types": filter_types,
+        "total_results": len(results)
     }
 
 
-@router.delete("/clear")
-def clear_vector_store():
+@router.post("/query_by_type")
+def query_by_chunk_type(q: str, chunk_type: str):
     """
-    Clear all data from the vector store.
-    """
-    vector_store.clear()
-    return {"message": "Vector store cleared successfully"}
+    Query using only specific chunk types.
 
+    Args:
+        q: Query string
+        chunk_type: Chunk type to filter by ("text", "table", or "image")
+    """
+    # Validate chunk type
+    valid_types = ["text", "table", "image"]
+    if chunk_type not in valid_types:
+        return {
+            "error": f"Invalid chunk type. Must be one of: {', '.join(valid_types)}",
+            "query": q
+        }
 
-@router.get("/stats")
-def get_stats():
-    """
-    Get detailed statistics about the vector store.
-    """
-    return vector_store.get_stats()
+    return query(q, chunk_types=chunk_type, include_sources=True)
