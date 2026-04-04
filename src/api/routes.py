@@ -4,7 +4,7 @@ import shutil
 from src.ingestion.parser import parse_pdf
 from src.ingestion.chunker import chunk_text
 from src.models.vision import describe_image
-from src.ingestion.embedder import embed_texts
+from src.ingestion.embedder import embed_texts, embed_chunks
 from src.retrieval.vector_store import VectorStore
 from src.retrieval.retriever import retrieve
 from src.models.llm import generate_answer
@@ -15,9 +15,10 @@ vector_store = VectorStore()
 
 @router.get("/health")
 def health():
+    stats = vector_store.get_stats()
     return {
         "status": "running",
-        "documents_indexed": len(vector_store.texts)
+        **stats
     }
 
 
@@ -33,6 +34,7 @@ async def ingest(file: UploadFile = File(...)):
 
     all_chunks = []
     metadata = []
+    chunk_types = []
 
     for chunk in chunks:
         content = chunk["content"]
@@ -57,30 +59,70 @@ async def ingest(file: UploadFile = File(...)):
             "page": chunk["page"],
             **chunk["metadata"]
         })
+        chunk_types.append(chunk["type"])
 
     if not all_chunks:
         return {"error": "No content extracted from document"}
 
-    embeddings = embed_texts(all_chunks)
+    # Embed all chunks using the enhanced embedder
+    embeddings = embed_chunks(all_chunks, chunk_types)
+
+    # Add to vector store
     vector_store.add(embeddings, all_chunks, metadata)
 
     return {
         "message": "Document ingested successfully",
         "chunks": len(all_chunks),
         "chunk_types": {
-            "text": len([m for m in metadata if m["type"] == "text"]),
-            "table": len([m for m in metadata if m["type"] == "table"]),
-            "image": len([m for m in metadata if m["type"] == "image"])
+            chunk_type: chunk_types.count(chunk_type)
+            for chunk_type in set(chunk_types)
         }
     }
 
 
 @router.post("/query")
-def query(q: str):
-    results = retrieve(q, vector_store)
+def query(q: str, chunk_types: str = None):
+    """
+    Query the vector store for relevant chunks.
+
+    Args:
+        q: Query string
+        chunk_types: Optional comma-separated list of chunk types to filter by (e.g., "text,table")
+    """
+    # Parse chunk types filter
+    filter_types = None
+    if chunk_types:
+        filter_types = [t.strip() for t in chunk_types.split(",") if t.strip()]
+
+    # Embed the query
+    query_embedding = embed_texts([q])[0]
+
+    # Search the vector store
+    results = vector_store.search(query_embedding, k=5, filter_types=filter_types)
+
+    # Generate answer using LLM
     answer = generate_answer(q, results)
 
     return {
         "answer": answer,
-        "sources": results
+        "sources": results,
+        "query": q,
+        "filter_types": filter_types
     }
+
+
+@router.delete("/clear")
+def clear_vector_store():
+    """
+    Clear all data from the vector store.
+    """
+    vector_store.clear()
+    return {"message": "Vector store cleared successfully"}
+
+
+@router.get("/stats")
+def get_stats():
+    """
+    Get detailed statistics about the vector store.
+    """
+    return vector_store.get_stats()
