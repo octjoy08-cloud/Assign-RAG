@@ -1,5 +1,6 @@
 from fastapi import APIRouter, UploadFile, File
 import shutil
+import os
 
 from src.ingestion.parser import parse_pdf
 from src.ingestion.chunker import chunk_text
@@ -12,12 +13,19 @@ from src.models.llm import generate_answer
 router = APIRouter()
 vector_store = VectorStore()
 
+# Configuration
+PROCESS_IMAGES = os.getenv("PROCESS_IMAGES", "true").lower() == "true"
+
 
 @router.get("/health")
 def health():
     stats = vector_store.get_stats()
     return {
         "status": "running",
+        "configuration": {
+            "process_images": PROCESS_IMAGES,
+            "openai_available": bool(os.getenv("OPENAI_API_KEY"))
+        },
         **stats
     }
 
@@ -41,16 +49,25 @@ async def ingest(file: UploadFile = File(...)):
 
         # For image chunks, generate description using vision model
         if chunk["type"] == "image" and "image_path" in chunk:
-            try:
-                content = describe_image(chunk["image_path"])
-            except Exception as e:
-                content = f"[Image description failed: {str(e)}]"
+            if PROCESS_IMAGES:
+                try:
+                    print(f"Processing image: {chunk['image_path']}")
+                    content = describe_image(chunk["image_path"])
+                    print(f"Generated description for image on page {chunk['page']}")
+                except Exception as e:
+                    # Fallback description when vision model fails
+                    content = f"[Image on page {chunk['page']}: {os.path.basename(chunk['image_path'])}. Unable to generate description due to: {str(e)}]"
+                    print(f"Failed to describe image {chunk['image_path']}: {e}")
+            else:
+                # Skip image processing
+                content = f"[Image processing disabled. Image: {os.path.basename(chunk['image_path'])} on page {chunk['page']}]"
+                print(f"Skipping image processing for {chunk['image_path']} (PROCESS_IMAGES=false)")
 
-        # For table chunks, the content is already in markdown format from Docling
+        # For table chunks, the content is already in markdown format
         # For text chunks, content is the raw text
 
-        # Skip empty chunks
-        if not content.strip():
+        # Skip empty chunks (but allow image chunks with fallback descriptions)
+        if not content.strip() and chunk["type"] != "image":
             continue
 
         all_chunks.append(content)
