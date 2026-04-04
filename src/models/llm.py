@@ -1,7 +1,13 @@
 from openai import OpenAI
 from typing import List, Dict, Any
+import os
 
-client = OpenAI()
+def get_openai_client():
+    """Get OpenAI client, only if API key is available."""
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY environment variable not set")
+    return OpenAI(api_key=api_key)
 
 
 def generate_answer(query: str, context_chunks: List[Dict[str, Any]]) -> str:
@@ -66,6 +72,7 @@ QUESTION: {query}
 ANSWER:"""
 
     try:
+        client = get_openai_client()
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[

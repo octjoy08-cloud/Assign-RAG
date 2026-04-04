@@ -2,7 +2,12 @@ from openai import OpenAI
 import base64
 import os
 
-client = OpenAI()
+def get_openai_client():
+    """Get OpenAI client, only if API key is available."""
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY environment variable not set")
+    return OpenAI(api_key=api_key)
 
 
 def encode_image(image_path):
@@ -28,6 +33,7 @@ def describe_image(image_path, max_retries=1):
     try:
         base64_image = encode_image(image_path)
 
+        client = get_openai_client()
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[

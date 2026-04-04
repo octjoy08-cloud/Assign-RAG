@@ -188,3 +188,16 @@ def query_by_chunk_type(q: str, chunk_type: str):
         }
 
     return query(q, chunk_types=chunk_type, include_sources=True)
+
+
+@router.get("/stats")
+def get_stats():
+    """Get vector store statistics."""
+    return vector_store.get_stats()
+
+
+@router.delete("/clear")
+def clear_store():
+    """Clear all data from the vector store."""
+    vector_store.clear()
+    return {"message": "Vector store cleared successfully"}
