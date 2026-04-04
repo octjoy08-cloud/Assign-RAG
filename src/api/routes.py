@@ -28,30 +28,50 @@ async def ingest(file: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    parsed = parse_pdf(file_path)
+    # Parse PDF with Docling - returns structured chunks
+    chunks = parse_pdf(file_path)
 
     all_chunks = []
     metadata = []
 
-    for page in parsed:
-        # TEXT
-        text_chunks = chunk_text(page["text"])
-        for chunk in text_chunks:
-            all_chunks.append(chunk)
-            metadata.append({"type": "text", "page": page["page"]})
+    for chunk in chunks:
+        content = chunk["content"]
 
-        # IMAGES
-        for img in page["images"]:
-            desc = describe_image(img)
-            all_chunks.append(desc)
-            metadata.append({"type": "image", "page": page["page"]})
+        # For image chunks, generate description using vision model
+        if chunk["type"] == "image" and "image_path" in chunk:
+            try:
+                content = describe_image(chunk["image_path"])
+            except Exception as e:
+                content = f"[Image description failed: {str(e)}]"
+
+        # For table chunks, the content is already in markdown format from Docling
+        # For text chunks, content is the raw text
+
+        # Skip empty chunks
+        if not content.strip():
+            continue
+
+        all_chunks.append(content)
+        metadata.append({
+            "type": chunk["type"],
+            "page": chunk["page"],
+            **chunk["metadata"]
+        })
+
+    if not all_chunks:
+        return {"error": "No content extracted from document"}
 
     embeddings = embed_texts(all_chunks)
     vector_store.add(embeddings, all_chunks, metadata)
 
     return {
         "message": "Document ingested successfully",
-        "chunks": len(all_chunks)
+        "chunks": len(all_chunks),
+        "chunk_types": {
+            "text": len([m for m in metadata if m["type"] == "text"]),
+            "table": len([m for m in metadata if m["type"] == "table"]),
+            "image": len([m for m in metadata if m["type"] == "image"])
+        }
     }
 
 
