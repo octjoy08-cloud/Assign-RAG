@@ -44,6 +44,6 @@ def root():
                 "query_by_type": "POST /query_by_type - Query specific chunk types",
                 "clear": "DELETE /clear - Clear vector store",
                 "stats": "GET /stats - Vector store statistics",
-                "ui": "Open http://localhost:8001/ in your browser for the web interface"
+                "ui": "Open http://localhost:8002/ in your browser for the web interface"
             }
         }
