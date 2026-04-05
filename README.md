@@ -170,7 +170,7 @@ This will install:
 Start the FastAPI server:
 
 ```bash
-uvicorn main:app --reload --host 0.0.0.0 --port 8003
+uvicorn main:app --reload --host 0.0.0.0 --port 8002
 ```
 
 You should see output similar to:
@@ -183,11 +183,11 @@ INFO:     Started reloader process [XXXX] using StatReload
 ### Step 6: Verify Installation
 
 1. **Check the web interface**:
-   Open your browser and navigate to: http://localhost:8003/
+   Open your browser and navigate to: http://localhost:8002/
 
 2. **Test the API health endpoint**:
    ```bash
-   curl http://localhost:8003/health
+   curl http://localhost:8002/health
    ```
 
    Expected response:
@@ -203,7 +203,7 @@ INFO:     Started reloader process [XXXX] using StatReload
 
 3. **Check vector store statistics**:
    ```bash
-   curl http://localhost:8003/stats
+   curl http://localhost:8002/stats
    ```
 
    Expected response (initially empty):
@@ -224,7 +224,7 @@ INFO:     Started reloader process [XXXX] using StatReload
 - Reinstall dependencies: `pip install -r requirements.txt`
 
 **"Address already in use" error**:
-- Change the port: `uvicorn main:app --reload --host 0.0.0.0 --port 8004`
+- Change the port: `uvicorn main:app --reload --host 0.0.0.0 --port 8003`
 
 **OpenAI API errors**:
 - Verify your API key in `.env` file
@@ -258,36 +258,36 @@ Once the system is running, you can:
 #### Document Ingestion
 ```bash
 # Upload and process a PDF
-curl -X POST "http://localhost:8003/ingest" -F "file=@document.pdf"
+curl -X POST "http://localhost:8002/ingest" -F "file=@document.pdf"
 ```
 
 #### Query with RAG
 ```bash
 # Ask questions with AI-generated answers
-curl -X POST "http://localhost:8003/query?q=What are the benefits of electric vehicles?"
+curl -X POST "http://localhost:8002/query?q=What are the benefits of electric vehicles?"
 ```
 
 #### Advanced Querying
 ```bash
 # Query specific content types
-curl -X POST "http://localhost:8003/query_by_type" \
+curl -X POST "http://localhost:8002/query_by_type" \
   -H "Content-Type: application/json" \
   -d '{"q": "What tables show cost data?", "chunk_type": "table"}'
 
 # Retrieve raw chunks without generation
-curl -X POST "http://localhost:8003/retrieve?q=charging stations&k=5"
+curl -X POST "http://localhost:8002/retrieve?q=charging stations&k=5"
 ```
 
 #### System Management
 ```bash
 # Get system health and status
-curl http://localhost:8003/health
+curl http://localhost:8002/health
 
 # Get vector store statistics
-curl http://localhost:8003/stats
+curl http://localhost:8002/stats
 
 # Clear all data
-curl -X DELETE http://localhost:8003/clear
+curl -X DELETE http://localhost:8002/clear
 ```
 
 ## 📋 API Documentation
@@ -315,7 +315,7 @@ Check system status and configuration.
 
 **Example:**
 ```bash
-curl http://localhost:8003/health
+curl http://localhost:8002/health
 ```
 
 ### Document Ingestion
@@ -352,7 +352,7 @@ Upload and process a PDF document for ingestion into the vector store.
 
 **Example:**
 ```bash
-curl -X POST "http://localhost:8003/ingest" \
+curl -X POST "http://localhost:8002/ingest" \
   -F "file=@document.pdf"
 ```
 
@@ -392,16 +392,16 @@ Ask questions with RAG (Retrieval-Augmented Generation) - retrieves relevant chu
 **Example:**
 ```bash
 # Basic query
-curl -X POST "http://localhost:8003/query" \
+curl -X POST "http://localhost:8002/query" \
   -d "q=What are the benefits of electric vehicles?"
 
 # Query with content type filtering
-curl -X POST "http://localhost:8003/query" \
+curl -X POST "http://localhost:8002/query" \
   -d "q=What charging times are shown in tables?" \
   -d "chunk_types=table"
 
 # Query without sources
-curl -X POST "http://localhost:8003/query" \
+curl -X POST "http://localhost:8002/query" \
   -d "q=How do EV batteries work?" \
   -d "include_sources=false"
 ```
@@ -449,12 +449,12 @@ Retrieve relevant document chunks without AI generation - useful for getting raw
 **Example:**
 ```bash
 # Basic retrieval
-curl -X POST "http://localhost:8003/retrieve" \
+curl -X POST "http://localhost:8002/retrieve" \
   -d "q=charging infrastructure" \
   -d "k=3"
 
 # Retrieve only table content
-curl -X POST "http://localhost:8003/retrieve" \
+curl -X POST "http://localhost:8002/retrieve" \
   -d "q=cost data" \
   -d "chunk_types=table" \
   -d "k=10"
@@ -475,12 +475,12 @@ Query using only specific content types - convenience endpoint for targeted sear
 **Example:**
 ```bash
 # Query only tables
-curl -X POST "http://localhost:8003/query_by_type" \
+curl -X POST "http://localhost:8002/query_by_type" \
   -d "q=What are the charging specifications?" \
   -d "chunk_type=table"
 
 # Query only images
-curl -X POST "http://localhost:8003/query_by_type" \
+curl -X POST "http://localhost:8002/query_by_type" \
   -d "q=What does the battery diagram show?" \
   -d "chunk_type=image"
 ```
@@ -506,7 +506,7 @@ Get detailed statistics about the vector store and processed content.
 
 **Example:**
 ```bash
-curl http://localhost:8003/stats
+curl http://localhost:8002/stats
 ```
 
 #### `DELETE /clear`
@@ -521,7 +521,7 @@ Clear all data from the vector store - removes all ingested documents and chunks
 
 **Example:**
 ```bash
-curl -X DELETE http://localhost:8003/clear
+curl -X DELETE http://localhost:8002/clear
 ```
 
 ### Error Responses
