@@ -1,13 +1,13 @@
-# Multimodal RAG System
+## Multimodal RAG System
 
 A comprehensive retrieval-augmented generation (RAG) system for processing PDF documents containing text, tables, and images. Features both a REST API and an interactive web interface for easy querying.
 
-# Problem Statement
-# Domain Identification
+## Problem Statement
+## Domain Identification
 
 This project is situated in the domain of electric mobility and automotive user guidance, with a focus on assisting electric vehicle (EV) drivers in understanding and utilizing technical information effectively. As EV adoption continues to grow globally, drivers increasingly rely on a wide range of documentation such as user manuals, charging guides, battery specifications, government policy documents, and maintenance handbooks. These documents are typically distributed in PDF format and contain a mix of textual explanations, structured tables, and visual diagrams.
 
-# Problem Description
+## Problem Description
 
 Electric vehicle drivers often face difficulty in extracting relevant information from complex and lengthy documents. For example, an EV user manual may include:
 
@@ -23,7 +23,7 @@ When a driver needs quick answers—such as “How long will it take to charge m
 
 This results in poor user experience, slower decision-making, and in some cases, incorrect interpretation of critical vehicle information.
 
-# Why This Problem Is Unique
+## Why This Problem Is Unique
 
 Unlike generic document question-answering systems, the EV driver assistance problem involves several unique challenges:
 
@@ -38,40 +38,40 @@ Some queries require combining information from different sources. For example, 
 5. User-Centric Querying
 Drivers typically ask natural language questions rather than searching using exact keywords, making traditional retrieval systems ineffective.
 
-# Why RAG Is the Right Approach
+## Why RAG Is the Right Approach
 
 A Retrieval-Augmented Generation (RAG) system is particularly well-suited to address these challenges:
 
-Multimodal Retrieval Capability
+- Multimodal Retrieval Capability
 By converting text, tables, and image summaries into embeddings, the system can retrieve relevant information regardless of its original format.
-Context-Aware Responses
+- Context-Aware Responses
 RAG enables the system to generate answers grounded in retrieved document content, ensuring accuracy and relevance.
-No Need for Continuous Model Retraining
+- No Need for Continuous Model Retraining
 EV technologies and documentation evolve frequently. RAG allows new documents to be ingested dynamically without retraining the model.
-Explainability and Traceability
+- Explainability and Traceability
 The system can provide references (such as page number and content type), allowing users to verify the source of information.
-Improved User Experience
+- Improved User Experience
 Drivers can interact with the system using natural language queries and receive concise, understandable answers without manually browsing documents.
 
 Compared to alternatives such as fine-tuning or keyword search, RAG provides a scalable, flexible, and domain-adaptive solution for handling diverse and evolving EV documentation.
 
-# Expected Outcomes
+## Expected Outcomes
 
 The proposed system aims to enable EV drivers to efficiently access and understand critical information from multimodal documents. A successful system will:
 
-Allow users to ask natural language questions related to EV usage, charging, and maintenance
-Retrieve and combine relevant information from:
-Text (instructions and explanations)
-Tables (charging times, specifications)
-Images (diagrams, dashboard symbols)
-Provide accurate, concise, and context-aware answers with source references
+- Allow users to ask natural language questions related to EV usage, charging, and maintenance
+- Retrieve and combine relevant information from:
+  - Text (instructions and explanations)
+  - Tables (charging times, specifications)
+  - Images (diagrams, dashboard symbols)
+- Provide accurate, concise, and context-aware answers with source references
 
 Example queries supported by the system include:
 
-“What is the charging time for my EV using a fast charger?”
-“What does this battery warning symbol indicate?”
-“Which charging connector is compatible with this vehicle?”
-“Summarize the charging specifications table on page 5”
+- “What is the charging time for my EV using a fast charger?”
+- “What does this battery warning symbol indicate?”
+- “Which charging connector is compatible with this vehicle?”
+- “Summarize the charging specifications table on page 5”
 
 Ultimately, this system will enhance the EV ownership experience by reducing information retrieval time, improving understanding of technical content, and supporting better decision-making for drivers.
 
