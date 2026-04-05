@@ -102,11 +102,11 @@ cp .env.example .env
 
 ### 3. Start the Server
 ```bash
-uvicorn main:app --reload --host 0.0.0.0 --port 8002
+uvicorn main:app --reload --host 0.0.0.0 --port 8003
 ```
 
 ### 4. Access the Web Interface
-**Open your browser and go to**: http://localhost:8002/
+**Open your browser and go to**: http://localhost:8003/
 
 ## 📖 Usage
 
@@ -123,36 +123,36 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8002
 #### Document Ingestion
 ```bash
 # Upload and process a PDF
-curl -X POST "http://localhost:8002/ingest" -F "file=@document.pdf"
+curl -X POST "http://localhost:8003/ingest" -F "file=@document.pdf"
 ```
 
 #### Query with RAG
 ```bash
 # Ask questions with AI-generated answers
-curl -X POST "http://localhost:8002/query?q=What are the benefits of electric vehicles?"
+curl -X POST "http://localhost:8003/query?q=What are the benefits of electric vehicles?"
 ```
 
 #### Advanced Querying
 ```bash
 # Query specific content types
-curl -X POST "http://localhost:8002/query_by_type" \
+curl -X POST "http://localhost:8003/query_by_type" \
   -H "Content-Type: application/json" \
   -d '{"q": "What tables show cost data?", "chunk_type": "table"}'
 
 # Retrieve raw chunks without generation
-curl -X POST "http://localhost:8002/retrieve?q=charging stations&k=5"
+curl -X POST "http://localhost:8003/retrieve?q=charging stations&k=5"
 ```
 
 #### System Management
 ```bash
 # Get system health and status
-curl http://localhost:8002/health
+curl http://localhost:8003/health
 
 # Get vector store statistics
-curl http://localhost:8002/stats
+curl http://localhost:8003/stats
 
 # Clear all data
-curl -X DELETE http://localhost:8002/clear
+curl -X DELETE http://localhost:8003/clear
 ```
 
 ## 📋 API Endpoints
