@@ -1,6 +1,7 @@
 # Multimodal RAG System
 
 A comprehensive retrieval-augmented generation (RAG) system for processing PDF documents containing text, tables, and images. Features both a REST API and an interactive web interface for easy querying.
+
 # Problem Statement
 # Domain Identification
 
@@ -10,7 +11,7 @@ This project is situated in the domain of electric mobility and automotive user 
 
 Electric vehicle drivers often face difficulty in extracting relevant information from complex and lengthy documents. For example, an EV user manual may include:
 
-Textual descriptions explaining battery usage, driving modes, and safety instructions
+- **Textual descriptions explaining battery usage, driving modes, and safety instructions
 Tables detailing charging times under different conditions, battery capacities, and efficiency metrics
 Diagrams illustrating charging setups, dashboard indicators, or energy flow systems
 
