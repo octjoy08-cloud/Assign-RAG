@@ -1,4 +1,5 @@
 from fastapi import APIRouter, UploadFile, File
+from pydantic import BaseModel
 import shutil
 import os
 
@@ -9,6 +10,21 @@ from src.ingestion.embedder import embed_texts, embed_chunks
 from src.retrieval.vector_store import VectorStore
 from src.retrieval.retriever import retrieve
 from src.models.llm import generate_answer, generate_answer_with_sources
+
+# Pydantic Models
+class QueryRequest(BaseModel):
+    q: str
+    chunk_types: str = None
+    include_sources: bool = True
+
+class RetrieveRequest(BaseModel):
+    q: str
+    chunk_types: str = None
+    k: int = 5
+
+class QueryByTypeRequest(BaseModel):
+    q: str
+    chunk_type: str
 
 router = APIRouter()
 vector_store = VectorStore()
@@ -98,22 +114,23 @@ async def ingest(file: UploadFile = File(...)):
 
 
 @router.post("/query")
-def query(q: str, chunk_types: str = None, include_sources: bool = True):
+def query(request: QueryRequest):
     """
     Query the vector store for relevant chunks and generate an answer.
 
     Args:
-        q: Query string
-        chunk_types: Optional comma-separated list of chunk types to filter by (e.g., "text,table")
-        include_sources: Whether to include detailed source information
+        request: JSON body with:
+            - q: Query string
+            - chunk_types: Optional comma-separated list of chunk types to filter by (e.g., "text,table")
+            - include_sources: Whether to include detailed source information
     """
     # Parse chunk types filter
     filter_types = None
-    if chunk_types:
-        filter_types = [t.strip() for t in chunk_types.split(",") if t.strip()]
+    if request.chunk_types:
+        filter_types = [t.strip() for t in request.chunk_types.split(",") if t.strip()]
 
     # Embed the query
-    query_embedding = embed_texts([q])[0]
+    query_embedding = embed_texts([request.q])[0]
 
     # Search the vector store
     results = vector_store.search(query_embedding, k=5, filter_types=filter_types)
@@ -122,48 +139,49 @@ def query(q: str, chunk_types: str = None, include_sources: bool = True):
         return {
             "answer": "No relevant information found in the documents.",
             "sources": [],
-            "query": q,
+            "query": request.q,
             "filter_types": filter_types
         }
 
     # Generate answer with sources
-    if include_sources:
-        response = generate_answer_with_sources(q, results)
+    if request.include_sources:
+        response = generate_answer_with_sources(request.q, results)
         response["filter_types"] = filter_types
         return response
     else:
         # Simple answer only
-        answer = generate_answer(q, results)
+        answer = generate_answer(request.q, results)
         return {
             "answer": answer,
-            "query": q,
+            "query": request.q,
             "filter_types": filter_types
         }
 
 
 @router.post("/retrieve")
-def retrieve_only(q: str, chunk_types: str = None, k: int = 5):
+def retrieve_only(request: RetrieveRequest):
     """
     Retrieve relevant chunks without generating an answer.
 
     Args:
-        q: Query string
-        chunk_types: Optional comma-separated list of chunk types to filter by
-        k: Number of results to return
+        request: JSON body with:
+            - q: Query string
+            - chunk_types: Optional comma-separated list of chunk types to filter by
+            - k: Number of results to return
     """
     # Parse chunk types filter
     filter_types = None
-    if chunk_types:
-        filter_types = [t.strip() for t in chunk_types.split(",") if t.strip()]
+    if request.chunk_types:
+        filter_types = [t.strip() for t in request.chunk_types.split(",") if t.strip()]
 
     # Embed the query
-    query_embedding = embed_texts([q])[0]
+    query_embedding = embed_texts([request.q])[0]
 
     # Search the vector store
-    results = vector_store.search(query_embedding, k=k, filter_types=filter_types)
+    results = vector_store.search(query_embedding, k=request.k, filter_types=filter_types)
 
     return {
-        "query": q,
+        "query": request.q,
         "results": results,
         "filter_types": filter_types,
         "total_results": len(results)
@@ -171,23 +189,24 @@ def retrieve_only(q: str, chunk_types: str = None, k: int = 5):
 
 
 @router.post("/query_by_type")
-def query_by_chunk_type(q: str, chunk_type: str):
+def query_by_chunk_type(request: QueryByTypeRequest):
     """
     Query using only specific chunk types.
 
     Args:
-        q: Query string
-        chunk_type: Chunk type to filter by ("text", "table", or "image")
+        request: JSON body with:
+            - q: Query string
+            - chunk_type: Chunk type to filter by ("text", "table", or "image")
     """
     # Validate chunk type
     valid_types = ["text", "table", "image"]
-    if chunk_type not in valid_types:
+    if request.chunk_type not in valid_types:
         return {
             "error": f"Invalid chunk type. Must be one of: {', '.join(valid_types)}",
-            "query": q
+            "query": request.q
         }
 
-    return query(q, chunk_types=chunk_type, include_sources=True)
+    return query(QueryRequest(q=request.q, chunk_types=request.chunk_type, include_sources=True))
 
 
 @router.get("/stats")

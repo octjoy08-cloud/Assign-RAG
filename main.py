@@ -39,9 +39,9 @@ def root():
             "endpoints": {
                 "health": "GET /health - System status and statistics",
                 "ingest": "POST /ingest - Upload and process PDF documents",
-                "query": "POST /query - Ask questions with RAG",
-                "retrieve": "POST /retrieve - Get relevant chunks without generation",
-                "query_by_type": "POST /query_by_type - Query specific chunk types",
+                "query": "POST /query - Ask questions with RAG (body: {q, chunk_types?, include_sources?})",
+                "retrieve": "POST /retrieve - Get relevant chunks without generation (body: {q, chunk_types?, k?})",
+                "query_by_type": "POST /query_by_type - Query specific chunk types (body: {q, chunk_type})",
                 "clear": "DELETE /clear - Clear vector store",
                 "stats": "GET /stats - Vector store statistics",
                 "ui": "Open http://localhost:8002/ in your browser for the web interface"
