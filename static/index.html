@@ -433,7 +433,7 @@
     </div>
 
     <script>
-        const API_BASE = 'http://localhost:8001';
+        const API_BASE = 'http://localhost:8002';
 
         // Load statistics on page load
         window.addEventListener('load', () => {
@@ -457,6 +457,10 @@
         async function loadStats() {
             try {
                 const response = await fetch(`${API_BASE}/stats`);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
                 const data = await response.json();
 
                 document.getElementById('totalChunks').textContent = data.total_chunks || 0;
@@ -465,7 +469,11 @@
                 document.getElementById('imageChunks').textContent = data.chunk_types?.image || 0;
             } catch (error) {
                 console.error('Error loading stats:', error);
-                showMessage('Error loading statistics', 'error');
+                let errorMessage = error.message;
+                if (error.message.includes('Failed to fetch')) {
+                    errorMessage = `Cannot connect to server at ${API_BASE}`;
+                }
+                showMessage(`Error loading statistics: ${errorMessage}`, 'error');
             }
         }
 
@@ -486,7 +494,10 @@
                     body: formData
                 });
 
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
 
                 const data = await response.json();
                 if (data.error) {
@@ -501,7 +512,13 @@
                 }
             } catch (error) {
                 console.error('Error uploading document:', error);
-                showMessage(`Error uploading document: ${error.message}`, 'error');
+                let errorMessage = error.message;
+                if (error.message.includes('Failed to fetch')) {
+                    errorMessage = `Cannot connect to server. Please ensure the server is running at ${API_BASE}`;
+                } else if (error.message.includes('CORS')) {
+                    errorMessage = 'CORS error. Please check server configuration.';
+                }
+                showMessage(`Error uploading document: ${errorMessage}`, 'error');
             }
         }
 

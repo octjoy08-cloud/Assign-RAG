@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 from src.api.routes import router
 import os
 
@@ -8,6 +9,15 @@ app = FastAPI(
     title="Multimodal RAG System",
     description="A retrieval-augmented generation system for processing PDFs with text, tables, and images",
     version="1.0.0"
+)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # Explicitly allow common methods
+    allow_headers=["*"],  # Allow all headers
 )
 
 app.include_router(router)
