@@ -11,15 +11,15 @@ This project is situated in the domain of electric mobility and automotive user 
 
 Electric vehicle drivers often face difficulty in extracting relevant information from complex and lengthy documents. For example, an EV user manual may include:
 
-- **Textual descriptions explaining battery usage, driving modes, and safety instructions
-Tables detailing charging times under different conditions, battery capacities, and efficiency metrics
-Diagrams illustrating charging setups, dashboard indicators, or energy flow systems
+- Textual descriptions explaining battery usage, driving modes, and safety instructions
+- Tables detailing charging times under different conditions, battery capacities, and efficiency metrics
+- Diagrams illustrating charging setups, dashboard indicators, or energy flow systems
 
 When a driver needs quick answers—such as “How long will it take to charge my vehicle using a fast charger?” or “What does this dashboard warning symbol mean?”—they must manually navigate through hundreds of pages of documentation. Traditional keyword-based search tools are insufficient because:
 
-They fail to interpret structured tables effectively
-They cannot extract meaning from diagrams or images
-They lack contextual understanding of EV-specific terminology
+- They fail to interpret structured tables effectively
+- They cannot extract meaning from diagrams or images
+- They lack contextual understanding of EV-specific terminology
 
 This results in poor user experience, slower decision-making, and in some cases, incorrect interpretation of critical vehicle information.
 
@@ -27,15 +27,15 @@ This results in poor user experience, slower decision-making, and in some cases,
 
 Unlike generic document question-answering systems, the EV driver assistance problem involves several unique challenges:
 
-Multimodal Information Dependency
+1. Multimodal Information Dependency
 Important information is distributed across multiple modalities. For example, charging times may be presented in tables, while charging procedures are explained in text, and connector types are shown in diagrams.
-Domain-Specific Terminology
+2. Domain-Specific Terminology
 EV documentation includes specialized terms such as state of charge (SoC), regenerative braking, battery management system (BMS), and charging levels (Level 1, Level 2, DC fast charging), which require contextual understanding.
-Real-Time Information Needs
+3. Real-Time Information Needs
 Drivers often require quick, precise answers while making decisions, such as choosing a charging method or interpreting a warning indicator.
-Cross-Modal Reasoning
+4. Cross-Modal Reasoning
 Some queries require combining information from different sources. For example, understanding a charging diagram may require correlating it with a table listing compatible connectors and textual safety instructions.
-User-Centric Querying
+5. User-Centric Querying
 Drivers typically ask natural language questions rather than searching using exact keywords, making traditional retrieval systems ineffective.
 
 # Why RAG Is the Right Approach
